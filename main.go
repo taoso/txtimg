@@ -37,6 +37,7 @@ func main() {
 	if *wonb {
 		fg, bg = bg, fg
 	}
+
 	rgba := image.NewRGBA(image.Rect(0, 0, *width, *height))
 	draw.Draw(rgba, rgba.Bounds(), bg, image.Point{}, draw.Src)
 
