@@ -12,6 +12,7 @@ import (
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
+	"golang.org/x/image/math/fixed"
 )
 
 var (
@@ -20,6 +21,7 @@ var (
 	hinting  = flag.String("hinting", "none", "none | full")
 	size     = flag.Float64("size", 14, "font size in points")
 	width    = flag.Int("width", 940, "image width in points")
+	padding  = flag.Int("padding", 10, "text left and right padding")
 	height   = flag.Int("height", 400, "image height in points")
 	chars    = flag.Int("chars", 20, "chars displayed per line")
 	spacing  = flag.Float64("spacing", 1.0, "line spacing")
@@ -59,9 +61,9 @@ func main() {
 	face := truetype.NewFace(f, &opts)
 
 	// Calculate the widths and print to image
-	pt := freetype.Pt(0, c.PointToFixed(*size).Round())
+	pt := freetype.Pt(*padding, c.PointToFixed(*size).Round())
 	newline := func() {
-		pt.X = 0
+		pt.X = fixed.Int26_6(*padding) << 6
 		pt.Y += c.PointToFixed(*size * *spacing)
 	}
 
@@ -74,7 +76,7 @@ func main() {
 				x = ' '
 			} else if f.Index(x) == 0 {
 				continue
-			} else if pt.X.Round()+w.Round() > *width {
+			} else if pt.X.Round()+w.Round() > *width-*padding {
 				newline()
 			}
 
@@ -96,7 +98,7 @@ func parseFlags() {
 	flag.Parse()
 
 	if *chars > 0 {
-		*size = float64(*width) / float64(*chars) * 72 / *dpi
+		*size = float64(*width-*padding*2) / float64(*chars) * 72 / *dpi
 	}
 }
 
